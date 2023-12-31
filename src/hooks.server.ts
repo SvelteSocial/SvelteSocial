@@ -16,6 +16,10 @@ const preloadHandle = (({ event, resolve }) =>
     preload: ({ type }) => PRELOAD_TYPES.includes(type),
   })) satisfies Handle
 
+// const protectHandle = (async ({ event, resolve }) => {
+
+// }) satisfies Handle
+
 const authHandle = SvelteKitAuth({
   adapter: DrizzleAdapter(db),
   trustHost: true,
