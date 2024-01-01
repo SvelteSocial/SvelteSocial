@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import Header from '$lib/components/Header.svelte'
+  import Header from '$lib/components/SideNav.svelte'
   import ProgressBar from '$lib/components/ProgressBar.svelte'
   import '../app.postcss'
   import { QueryClientProvider } from '@tanstack/svelte-query'
