@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { timestamp, pgTable, text, primaryKey, index } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, primaryKey } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
 
 export * from './auth'
@@ -8,7 +8,7 @@ export const users = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   username: text('username').unique().notNull(),
-  description: text('description').notNull(),
+  bio: text('bio').notNull(),
   email: text('email').unique().notNull(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image').notNull(),
@@ -25,13 +25,13 @@ export const followers = pgTable(
     followerId: text('follower_id')
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    followingId: text('following_id')
+    followedId: text('followed_id')
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  ({ followerId, followingId }) => ({
-    pk: primaryKey({ columns: [followerId, followingId] }),
+  ({ followerId, followedId }) => ({
+    pk: primaryKey({ columns: [followerId, followedId] }),
   })
 )
 export const followersRelations = relations(followers, ({ one }) => ({
@@ -39,8 +39,8 @@ export const followersRelations = relations(followers, ({ one }) => ({
     fields: [followers.followerId],
     references: [users.id],
   }),
-  following: one(users, {
-    fields: [followers.followingId],
+  followed: one(users, {
+    fields: [followers.followedId],
     references: [users.id],
   }),
 }))
