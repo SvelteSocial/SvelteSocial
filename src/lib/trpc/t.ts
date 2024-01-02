@@ -6,7 +6,7 @@ const t = initTRPC.context<Context>().create({
   transformer: superjson,
 })
 
-export const { middleware } = t
+export const { router, middleware, createCallerFactory } = t
 export const auth = middleware(async ({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({
@@ -24,6 +24,5 @@ export const auth = middleware(async ({ ctx, next }) => {
   })
 })
 
-export const { router } = t
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(auth)

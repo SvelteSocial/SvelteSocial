@@ -14,7 +14,7 @@
 <main>
   <Button>Test</Button>
   <h1 class="flex items-center text-green-500">Welcome<Smile /></h1>
-  <button on:click={() => signIn('github')}>{data.msg}</button>
+  <button on:click={() => signIn('github')}>hi</button>
   <a href="/mockData">test</a>
   <Button>Test2</Button>
 </main>
