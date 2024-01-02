@@ -1,35 +1,38 @@
-import { users } from '$lib/server/schema/schema'
-import { logger } from '../middleware'
+import { followers } from '$lib/server/schema/schema'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
 import { count, eq } from 'drizzle-orm'
 import { z } from 'zod'
 
 export const userRouter = router({
-  // followerNumber: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx }) => {
-  //   // const fullUser = await ctx.db.select({ value: count() }).from(users)
-  //   const count = ctx.db.
-  // }),
+  followersCount: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [followersCount] = await ctx.db
+        .select({ count: count() })
+        .from(followers)
+        .where(eq(followers.followedId, input.userId))
+      return { count: followersCount.count }
+    }),
   followers: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.db.query.users.findFirst({
-        where: eq(users.id, input.userId),
+      const query = ctx.db.query.followers.findMany({
+        where: (followers, { eq }) => eq(followers.followedId, input.userId),
         columns: {},
         with: {
-          followers: {
-            with: {
-              follower: true,
-              following: true,
+          follower: {
+            columns: {
+              id: true,
+              username: true,
+              image: true,
+              bio: true,
+              createdAt: true,
             },
           },
         },
       })
-      if (!user)
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'User not found',
-        })
-      return user.followers
+      const followers = (await query).map(({ follower }) => follower)
+      return followers
     }),
 })
