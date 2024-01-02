@@ -37,7 +37,6 @@ function profileHandler({
     image: avatar_url,
     bio: 'Hello World!',
   }
-  console.log({ data })
   return data
 }
 const authHandle = SvelteKitAuth({

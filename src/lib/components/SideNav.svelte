@@ -1,13 +1,18 @@
 <script lang="ts">
+  import { signOut } from '@auth/sveltekit/client'
+  import { Button } from './ui/button'
+  import { LogOut } from 'lucide-svelte'
 </script>
 
-<aside>
-  <nav>
-    <ul class="flex">
-      <li><a href="#section1">Section 1</a></li>
-      <li><a href="#section2">Section 2</a></li>
-      <li><a href="#section3">Section 3</a></li>
-      <li><a href="#section4">Section 4</a></li>
+<aside class="p-4">
+  <nav class="contents">
+    <ul class="flex h-full flex-col justify-between">
+      <li><Button variant="outline" size="icon" href="/">H</Button></li>
+      <li>
+        <Button variant="outline" size="icon" on:click={() => signOut()}>
+          <LogOut size="17" />
+        </Button>
+      </li>
     </ul>
   </nav>
 </aside>
