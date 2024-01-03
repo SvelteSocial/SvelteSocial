@@ -69,7 +69,6 @@ const authHandle = SvelteKitAuth({
 })
 
 const protectHandle = (async ({ event, resolve }) => {
-  console.log('RUNNING PROTECT HANDLE')
   const route = event.route.id
   const isDev = route?.startsWith('/dev')
   const isApp = route?.startsWith('/(app)')

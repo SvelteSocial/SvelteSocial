@@ -73,20 +73,25 @@ export const userRouter = router({
           .where(eq(followersSchema.followerId, input.userId))
       )
       return posts
-      //   .innerJoin(
-      //     followersSchema,
-      //     or(
-      //       eq(followersSchema.followedId, postsSchema.authorId),
-      //       eq(followersSchema.followerId, postsSchema.authorId)
-      //     )
-      //   )
-      //   .where(
-      //     or(eq(followersSchema.followerId, input.userId), eq(postsSchema.authorId, input.userId))
-      //   )
-      // return posts
-      // const posts = await ctx.db.query.posts.findMany({
-      //   where: (post, { eq }) => eq(post.authorId, input.userId),
-      // })
-      // return posts
+    }),
+  follow: protectedProcedure
+    .input(z.object({ userId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = input
+      const local = ctx.session.user
+      if (userId === local.id) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot follow yourself' })
+      }
+      const existingFollow = await ctx.db.query.followers.findFirst({
+        where: (followers, { and, eq }) =>
+          and(eq(followers.followerId, local.id), eq(followers.followedId, userId)),
+      })
+      if (existingFollow) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You are already following this user',
+        })
+      }
+      await ctx.db.insert(followersSchema).values({ followerId: local.id, followedId: userId })
     }),
 })
