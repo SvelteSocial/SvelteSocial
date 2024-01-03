@@ -19,18 +19,20 @@ const preloadHandle = (({ event, resolve }) =>
   })) satisfies Handle
 
 function profileHandler({
+  id,
   email,
   name,
   login,
   avatar_url,
 }: {
+  id: number
   email: string | null
   name: string | null
   login: string
   avatar_url: string
 }): InferInsertModel<typeof users> {
   const data = {
-    id: crypto.randomUUID(),
+    id: id + '',
     email: email!,
     name: name ?? login,
     username: login,
