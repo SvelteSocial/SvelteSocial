@@ -41,7 +41,7 @@ export const userRouter = router({
     return { ...user, followersCount, followingCount }
   }),
   followers: protectedProcedure
-    .input(z.object({ userId: z.string().uuid() }))
+    .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
       const query = ctx.db.query.followers.findMany({
         where: (followers, { eq }) => eq(followers.followedId, input.userId),
@@ -61,21 +61,19 @@ export const userRouter = router({
       const followers = (await query).map(({ follower }) => follower)
       return followers
     }),
-  posts: publicProcedure
-    .input(z.object({ userId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const posts = await union(
-        ctx.db.select().from(postsSchema).where(eq(postsSchema.authorId, input.userId)),
-        ctx.db
-          .select({ ...getTableColumns(postsSchema) })
-          .from(postsSchema)
-          .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
-          .where(eq(followersSchema.followerId, input.userId))
-      )
-      return posts
-    }),
+  posts: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
+    const posts = await union(
+      ctx.db.select().from(postsSchema).where(eq(postsSchema.authorId, input.userId)),
+      ctx.db
+        .select({ ...getTableColumns(postsSchema) })
+        .from(postsSchema)
+        .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
+        .where(eq(followersSchema.followerId, input.userId))
+    )
+    return posts
+  }),
   follow: protectedProcedure
-    .input(z.object({ userId: z.string().uuid() }))
+    .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { userId } = input
       const local = ctx.session.user
