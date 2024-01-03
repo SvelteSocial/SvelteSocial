@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { timestamp, pgTable, text, primaryKey } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, primaryKey, uuid } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
 
 export * from './auth'
@@ -85,6 +85,28 @@ export const postLikesRelations = relations(postLikes, ({ one }) => ({
   }),
   user: one(users, {
     fields: [postLikes.userId],
+    references: [users.id],
+  }),
+}))
+
+export const postComments = pgTable('post_comment', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  postId: text('post_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  userId: text('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  content: text('text').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+export const postCommentsRelations = relations(postComments, ({ one }) => ({
+  post: one(posts, {
+    fields: [postComments.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [postComments.userId],
     references: [users.id],
   }),
 }))
