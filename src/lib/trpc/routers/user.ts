@@ -14,11 +14,8 @@ export const userRouter = router({
     const user = await ctx.db.query.users.findFirst({
       where: (user, { eq }) => eq(user.username, input.username),
       columns: {
-        id: true,
-        username: true,
-        image: true,
-        bio: true,
-        createdAt: true,
+        email: false,
+        emailVerified: false,
       },
     })
     if (!user) {
@@ -70,6 +67,7 @@ export const userRouter = router({
         .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
         .where(eq(followersSchema.followerId, input.userId))
     )
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     return posts
   }),
   follow: protectedProcedure

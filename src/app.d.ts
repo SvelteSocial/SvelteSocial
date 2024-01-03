@@ -1,5 +1,4 @@
-import type { posts as postsSchema } from '$lib/server/schema/schema'
-import type { InferSelectModel } from 'drizzle-orm'
+import type { Post } from '$lib/types'
 
 declare global {
   namespace App {
@@ -7,7 +6,7 @@ declare global {
     // interface Locals {}
     // interface PageData {}
     interface PageState {
-      selectedImage: InferSelectModel<typeof postsSchema>
+      selectedImage: Post
     }
     // interface Platform {}
   }

@@ -1,9 +1,8 @@
 <script lang="ts">
   import * as Dialog from '$lib/components/ui/dialog'
-  import type { InferInsertModel } from 'drizzle-orm'
-  import type { posts as postsSchema } from '$lib/server/schema/schema'
+  import type { Post } from '$lib/types'
 
-  export let data: InferInsertModel<typeof postsSchema>
+  export let data: Post
   let open = true
 
   $: if (!open) {

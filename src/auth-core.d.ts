@@ -1,8 +1,7 @@
-import type { users as usersSchema } from '$lib/server/schema/schema'
-import type { InferSelectModel } from 'drizzle-orm'
+import type { User as UserType } from '$lib/types'
 
 declare module '@auth/core/types' {
   interface Session {
-    user: InferSelectModel<typeof usersSchema>
+    user: UserType
   }
 }
