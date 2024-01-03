@@ -1,6 +1,6 @@
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from '$env/static/private'
 import { db } from '$lib/server/db'
-import { users } from '$lib/server/schema/schema'
+import { users as usersSchema } from '$lib/server/schema/schema'
 import { createContext } from '$lib/trpc/context'
 import { appRouter } from '$lib/trpc/routers/_app'
 import GitHub from '@auth/core/providers/github'
@@ -30,7 +30,7 @@ function profileHandler({
   name: string | null
   login: string
   avatar_url: string
-}): InferInsertModel<typeof users> {
+}): InferInsertModel<typeof usersSchema> {
   const data = {
     id: id + '',
     email: email!,
@@ -47,7 +47,7 @@ const authHandle = SvelteKitAuth({
     // @ts-expect-error Custom adapter doesn't follow the interface
     createUser: async (data: ReturnType<typeof profileHandler>) => {
       return await db
-        .insert(users)
+        .insert(usersSchema)
         .values(data)
         .returning()
         .then((res) => res[0] ?? null)

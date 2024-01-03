@@ -6,6 +6,8 @@
   import { Button } from '$lib/components/ui/button'
   import { Loader2 } from 'lucide-svelte'
   import { Skeleton } from '$lib/components/ui/skeleton'
+  import PostModal from '$lib/components/PostModal.svelte'
+  import { goto, pushState } from '$app/navigation'
 
   export let data
   $: ({ user, localUser, queryClient } = data)
@@ -33,6 +35,9 @@
   const formatter = new Intl.NumberFormat()
 </script>
 
+{#if $page.state.selectedImage}
+  <PostModal data={$page.state.selectedImage} />
+{/if}
 <div class="py-8">
   <header class="flex gap-20 pb-8">
     <Avatar.Root class="h-40 w-40">
@@ -82,7 +87,32 @@
     {#if $postsQuery.isSuccess}
       {#each $postsQuery.data as post}
         <div class="aspect-square">
-          <img src={post.media[0]} alt={post.caption} class="h-full w-full object-cover" />
+          <a
+            href="/p/{post.id}"
+            class="group relative"
+            on:click={(e) => {
+              if (e.metaKey || innerWidth < 640) return
+              e.preventDefault()
+
+              const { href } = e.currentTarget
+              try {
+                pushState(href, { selectedImage: post })
+              } catch {
+                goto(href)
+              }
+            }}
+          >
+            <img
+              src={post.media[0]}
+              alt={post.caption}
+              class="h-full w-full object-cover transition-opacity duration-150 group-hover:opacity-75"
+            />
+            <div
+              class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            >
+              <p>hi</p>
+            </div>
+          </a>
         </div>
       {/each}
     {:else}
@@ -93,6 +123,5 @@
       {/each}
     {/if}
   </div>
-
   <!-- <code class="block overflow-hidden">{JSON.stringify($postsQuery.data)}</code> -->
 </div>

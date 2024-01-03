@@ -12,6 +12,7 @@ function preloadImage(url: string) {
 export async function load(event) {
   if (!browser) return
   const { queryClient, user } = await event.parent()
+  preloadImage(user.image)
   queryClient
     .fetchQuery({
       queryKey: ['userPosts', user.username],

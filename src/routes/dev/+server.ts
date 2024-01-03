@@ -1,6 +1,6 @@
 import { dev } from '$app/environment'
 import { db } from '$lib/server/db'
-import { posts, users } from '$lib/server/schema/schema'
+import { posts as postsSchema } from '$lib/server/schema/schema'
 import { faker } from '@faker-js/faker'
 import { error, json } from '@sveltejs/kit'
 
@@ -26,13 +26,15 @@ export async function GET() {
   if (!dev) return
   const user = await db.query.users.findFirst({ columns: { id: true } })
   if (!user) return error(404, 'No users in database')
-  const [post] = await db
-    .insert(posts)
-    .values({
-      authorId: user.id,
-      caption: faker.lorem.sentence(),
-      media: Array.from({ length: 3 }, () => getRandomImage()),
-    })
+  const posts = await db
+    .insert(postsSchema)
+    .values(
+      Array.from({ length: 3 }, () => ({
+        authorId: user.id,
+        caption: faker.lorem.sentence(),
+        media: Array.from({ length: 3 }, () => getRandomImage()),
+      }))
+    )
     .returning()
-  return json(post)
+  return json(posts)
 }
