@@ -1,3 +1,4 @@
+import { omit } from '$lib/utils'
 import type { Context } from './context'
 import { TRPCError, initTRPC } from '@trpc/server'
 import superjson from 'superjson'
@@ -8,18 +9,16 @@ const t = initTRPC.context<Context>().create({
 
 export const { router, middleware, createCallerFactory } = t
 export const auth = middleware(async ({ ctx, next }) => {
-  if (!ctx.session?.user) {
+  const session = await ctx.getSession()
+  if (!session?.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
     })
   }
   return next({
     ctx: {
-      ...ctx,
-      session: {
-        ...ctx.session,
-        user: ctx.session.user,
-      },
+      session,
+      ...omit(ctx, 'getSession'),
     },
   })
 })

@@ -8,8 +8,7 @@ export async function load(event) {
   const user = await caller.user
     .get({ username: event.params.username })
     .catch((err: TRPCError) => error(404, err.message))
-  const followerCount = await caller.user.followersCount({ userId: user.id })
-  return { user, followerCount }
+  return { user }
   // const msg = await caller.greeting()
   // return { msg }
 }

@@ -16,6 +16,7 @@
     "@auth/core": "^0.19.0",
     "@auth/drizzle-adapter": "^0.3.12",
     "@auth/sveltekit": "^0.5.0",
+    "@faker-js/faker": "^8.3.1",
     "@sveltejs/adapter-node": "^2.0.2",
     "@sveltejs/enhanced-img": "^0.1.7",
     "@sveltejs/kit": "^2.0.6",
