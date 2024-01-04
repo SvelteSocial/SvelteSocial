@@ -1,5 +1,7 @@
 <script lang="ts">
   import { goto, pushState } from '$app/navigation'
+  import { page } from '$app/stores'
+  import PostModal from '$lib/components/PostModal.svelte'
   import type { Post } from '$lib/types'
   import type { MouseEventHandler } from 'svelte/elements'
 
@@ -11,13 +13,18 @@
 
     const { href } = e.currentTarget
     try {
-      pushState(href, { selectedImage: post })
+      pushState(href, { selectedImageId: post.id })
     } catch {
       goto(href)
     }
   }) satisfies MouseEventHandler<HTMLAnchorElement>
+
+  // $: postModalOpen = $page.state.selectedImageId === post.id
+  // let postModalOpen = false
 </script>
 
+<!-- <button on:click={() => (postModalOpen = true)}>open</button> -->
+<PostModal {post} open={$page.state.selectedImageId === post.id} />
 <div class="aspect-square">
   <a href="/p/{post.id}" class="group relative" on:click={handleClick}>
     <img

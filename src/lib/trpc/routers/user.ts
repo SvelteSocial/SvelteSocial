@@ -67,7 +67,7 @@ export const userRouter = router({
         .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
         .where(eq(followersSchema.followerId, input.userId))
     )
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // await new Promise((resolve) => setTimeout(resolve, 2000))
     return posts
   }),
   follow: protectedProcedure

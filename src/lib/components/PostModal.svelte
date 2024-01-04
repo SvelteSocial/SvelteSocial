@@ -1,18 +1,14 @@
 <script lang="ts">
   import * as Dialog from '$lib/components/ui/dialog'
   import type { Post } from '$lib/types'
+  import { createEventDispatcher } from 'svelte'
 
-  export let data: Post
-  let open = true
-
-  $: if (!open) {
-    console.log('closing')
-    history.back()
-  }
+  export let post: Post
+  export let open: boolean
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root {open} onOpenChange={() => history.back()}>
   <Dialog.Content>
-    <img src={data.media[0]} alt={data.caption} />
+    <img src={post.media[0]} alt={post.caption} />
   </Dialog.Content>
 </Dialog.Root>

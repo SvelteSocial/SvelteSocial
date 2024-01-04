@@ -21,9 +21,6 @@
   }
 </script>
 
-{#if $page.state.selectedImage}
-  <PostModal data={$page.state.selectedImage} />
-{/if}
 <div class="py-8">
   <Header {queryClient} {user} {localUser} />
   <div class="grid grid-cols-3 gap-4">
