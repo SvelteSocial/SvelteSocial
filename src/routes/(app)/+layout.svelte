@@ -1,14 +1,11 @@
 <script lang="ts">
   import ProgressBar from '$lib/components/ProgressBar.svelte'
   import SideNav from '$lib/components/SideNav.svelte'
-  import { page } from '$app/stores'
+  import PostModal from '../../lib/components/PostModal.svelte'
 
-  //   const userData = createQuery({
-  //     queryKey: ['userData'],
-  //     queryFn: () => trpc($page).userData.query(),
-  //   })
 </script>
 
+<!-- <PostModal /> -->
 <ProgressBar />
 
 <div class=" flex min-h-screen">

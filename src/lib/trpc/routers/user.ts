@@ -3,6 +3,7 @@ import {
   posts as postsSchema,
   users as usersSchema,
 } from '$lib/server/schema/schema'
+import { omit } from '$lib/utils'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
 import { count, eq, getTableColumns, or } from 'drizzle-orm'
@@ -11,16 +12,32 @@ import { z } from 'zod'
 
 export const userRouter = router({
   get: publicProcedure.input(z.object({ username: z.string() })).query(async ({ ctx, input }) => {
+    const session = await ctx.getSession()
+    const localUser = session?.user
     const user = await ctx.db.query.users.findFirst({
       where: (user, { eq }) => eq(user.username, input.username),
       columns: {
         email: false,
         emailVerified: false,
       },
+      with: {
+        followers: {
+          where:
+            localUser && localUser.username === input.username
+              ? (followers, { eq, or }) =>
+                  or(eq(followers.followerId, localUser.id), eq(followers.followedId, localUser.id))
+              : undefined,
+        },
+      },
     })
     if (!user) {
       throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
     }
+
+    const isFollowing =
+      !!localUser && user.followers.map(({ followerId }) => followerId).includes(localUser.id)
+    const isFollowedBy =
+      !!localUser && user.followers.map(({ followedId }) => followedId).includes(localUser.id)
     const followersCountQuery = ctx.db
       .select({ count: count() })
       .from(followersSchema)
@@ -35,7 +52,7 @@ export const userRouter = router({
       followersCountQuery,
       followingCountQuery,
     ])
-    return { ...user, followersCount, followingCount }
+    return { ...omit(user, 'followers'), followersCount, followingCount, isFollowing, isFollowedBy }
   }),
   followers: protectedProcedure
     .input(z.object({ userId: z.string() }))
@@ -66,7 +83,7 @@ export const userRouter = router({
         .from(postsSchema)
         .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
         .where(eq(followersSchema.followerId, input.userId))
-    )
+    ).orderBy(postsSchema.createdAt)
     // await new Promise((resolve) => setTimeout(resolve, 2000))
     return posts
   }),

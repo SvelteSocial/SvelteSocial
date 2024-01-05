@@ -3,7 +3,6 @@
   import { trpc } from '$lib/trpc/client.js'
   import { page } from '$app/stores'
   import { Skeleton } from '$lib/components/ui/skeleton'
-  import PostModal from '$lib/components/PostModal.svelte'
   import Header from './Header.svelte'
   import PostPreview from './PostPreview.svelte'
 

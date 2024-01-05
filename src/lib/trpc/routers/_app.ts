@@ -1,12 +1,12 @@
 import { router, createCallerFactory } from '../t'
 import { mockData } from './mockData'
-import { postsRouter } from './posts'
+import { postRouter } from './post'
 import { userRouter } from './user'
 import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server'
 
 export const appRouter = router({
   user: userRouter,
-  post: postsRouter,
+  post: postRouter,
   mockData,
 })
 export const createCaller = createCallerFactory(appRouter)

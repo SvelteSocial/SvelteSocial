@@ -5,3 +5,4 @@ import type { InferSelectModel } from 'drizzle-orm'
 export type PageUser = RouterOutputs['user']['get']
 export type User = InferSelectModel<typeof usersSchema>
 export type Post = InferSelectModel<typeof posts>
+export type PagePost = RouterOutputs['post']['get']
