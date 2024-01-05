@@ -13,9 +13,10 @@ export async function load(event) {
   if (!browser) return
   const { queryClient, user } = await event.parent()
   preloadImage(user.image)
+
   queryClient
     .fetchQuery({
-      queryKey: ['userPosts', user.username],
+      queryKey: ['user', user.username, 'posts'],
       queryFn: () => trpc(event).user.posts.query({ userId: user.id }),
     })
     .then((posts) => posts.map((post) => preloadImage(post.media[0])))

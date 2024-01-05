@@ -5,35 +5,37 @@
   import { Skeleton } from '$lib/components/ui/skeleton'
   import Header from './Header.svelte'
   import PostPreview from './PostPreview.svelte'
+  import { createPostsQuery } from '$lib/queries'
 
   export let data
   $: ({ user, localUser, queryClient } = data)
 
-  $: postsQuery = createQuery({
-    queryKey: ['userPosts', user.username],
-    queryFn: () => trpc($page).user.posts.query({ userId: user.id }),
+  $: userQuery = createQuery({
+    queryKey: ['user', user.username],
+    queryFn: () => trpc($page).user.get.query({ username: user.username }),
+    initialData: user,
   })
-  $: if ($postsQuery.isSuccess) {
-    for (const post of $postsQuery.data) {
-      queryClient.setQueryData(['post', post.id], post)
-    }
-  }
+
+  $: postsQuery = createPostsQuery({ userId: user.id, username: user.username }, { queryClient })
 </script>
 
-<div class="py-8">
-  <Header {queryClient} {user} {localUser} />
-  <div class="grid grid-cols-3 gap-4">
-    {#if $postsQuery.isSuccess}
-      {#each $postsQuery.data as post}
-        <PostPreview {post} />
-      {/each}
-    {:else}
-      {#each Array(9) as _}
-        <div class="aspect-square">
-          <Skeleton class="h-full w-full rounded-none" />
-        </div>
-      {/each}
-    {/if}
+{#if $userQuery.isSuccess}
+  {@const user = $userQuery.data}
+  <div class="py-8">
+    <Header {queryClient} {user} {localUser} />
+    <div class="grid grid-cols-3 gap-4">
+      {#if $postsQuery.isSuccess}
+        {#each $postsQuery.data as post}
+          <PostPreview {post} />
+        {/each}
+      {:else}
+        {#each Array(9) as _}
+          <div class="aspect-square">
+            <Skeleton class="h-full w-full rounded-none" />
+          </div>
+        {/each}
+      {/if}
+    </div>
+    <!-- <code class="block overflow-hidden">{JSON.stringify($postsQuery.data)}</code> -->
   </div>
-  <!-- <code class="block overflow-hidden">{JSON.stringify($postsQuery.data)}</code> -->
-</div>
+{/if}

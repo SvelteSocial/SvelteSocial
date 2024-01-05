@@ -6,20 +6,13 @@
   import { Button } from '$lib/components/ui/button'
   import { Loader2 } from 'lucide-svelte'
   import type { PageUser, User } from '$lib/types'
+  import { createPostsQuery } from '$lib/queries'
 
   export let queryClient: QueryClient
   export let user: PageUser
   export let localUser: User | undefined
 
-  $: postsQuery = createQuery({
-    queryKey: ['userPosts', user.username],
-    queryFn: () => trpc($page).user.posts.query({ userId: user.id }),
-  })
-  $: if ($postsQuery.isSuccess) {
-    for (const post of $postsQuery.data) {
-      queryClient.setQueryData(['post', post.id], post)
-    }
-  }
+  $: postsQuery = createPostsQuery({ userId: user.id, username: user.username }, { queryClient })
 
   $: isOwner = user.id === localUser?.id
   const followMutation = createMutation({

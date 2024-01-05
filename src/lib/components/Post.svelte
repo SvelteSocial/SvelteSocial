@@ -11,7 +11,13 @@
 
   const postQuery = createQuery({
     queryKey: ['post', postId],
-    queryFn: () => trpc($page).post.get.query({ postId }),
+    queryFn: () =>
+      trpc($page)
+        .post.get.query({ postId })
+        .then(async (data) => {
+          await new Promise((resolve) => setTimeout(resolve, 15000))
+          return data
+        }),
   })
 </script>
 
