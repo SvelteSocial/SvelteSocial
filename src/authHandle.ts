@@ -16,7 +16,7 @@ const tableFn = <T extends keyof typeof map>(name: T, ..._: unknown[]) => {
   return map[name]
 }
 
-export const authHandle = SvelteKitAuth({
+export default SvelteKitAuth({
   adapter: DrizzleAdapter(db, tableFn as PgTableFn),
   trustHost: true,
   secret: AUTH_SECRET,
