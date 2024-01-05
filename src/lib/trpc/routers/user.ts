@@ -2,7 +2,7 @@ import {
   followers as followersSchema,
   posts as postsSchema,
   users as usersSchema,
-} from '$lib/server/schema/schema'
+} from '$lib/server/schema'
 import { omit } from '$lib/utils'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'

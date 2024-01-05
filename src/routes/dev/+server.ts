@@ -1,6 +1,6 @@
 import { dev } from '$app/environment'
 import { db } from '$lib/server/db'
-import { posts as postsSchema } from '$lib/server/schema/schema'
+import { posts as postsSchema } from '$lib/server/schema'
 import { faker } from '@faker-js/faker'
 import { error, json } from '@sveltejs/kit'
 
