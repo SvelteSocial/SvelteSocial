@@ -1,24 +1,11 @@
 <script lang="ts">
-  import type { PagePost } from '$lib/types'
   import * as Card from '$lib/components/ui/card'
   import * as Avatar from '$lib/components/ui/avatar'
   import { Separator } from '$lib/components/ui/separator'
-  import { createQuery } from '@tanstack/svelte-query'
-  import { trpc } from '$lib/trpc/client'
-  import { page } from '$app/stores'
+  import { createPostQuery } from '$lib/queries'
 
   export let postId: string
-
-  const postQuery = createQuery({
-    queryKey: ['post', postId],
-    queryFn: () =>
-      trpc($page)
-        .post.get.query({ postId })
-        .then(async (data) => {
-          await new Promise((resolve) => setTimeout(resolve, 15000))
-          return data
-        }),
-  })
+  $: postQuery = createPostQuery({ postId }, {})
 </script>
 
 <!-- <Card.Root>

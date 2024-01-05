@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { QueryClient, createMutation, createQuery } from '@tanstack/svelte-query'
+  import { QueryClient, createMutation } from '@tanstack/svelte-query'
   import * as Avatar from '$lib/components/ui/avatar'
   import { trpc } from '$lib/trpc/client.js'
   import { page } from '$app/stores'

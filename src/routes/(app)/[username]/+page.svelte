@@ -1,21 +1,13 @@
 <script lang="ts">
-  import { createQuery } from '@tanstack/svelte-query'
-  import { trpc } from '$lib/trpc/client.js'
-  import { page } from '$app/stores'
   import { Skeleton } from '$lib/components/ui/skeleton'
   import Header from './Header.svelte'
   import PostPreview from './PostPreview.svelte'
-  import { createPostsQuery } from '$lib/queries'
+  import { createPostsQuery, createUserQuery } from '$lib/queries'
 
   export let data
   $: ({ user, localUser, queryClient } = data)
 
-  $: userQuery = createQuery({
-    queryKey: ['user', user.username],
-    queryFn: () => trpc($page).user.get.query({ username: user.username }),
-    initialData: user,
-  })
-
+  $: userQuery = createUserQuery({ username: user.username }, { initialData: user })
   $: postsQuery = createPostsQuery({ userId: user.id, username: user.username }, { queryClient })
 </script>
 

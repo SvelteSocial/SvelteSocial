@@ -1,8 +1,7 @@
 <script lang="ts">
   import ProgressBar from '$lib/components/ProgressBar.svelte'
   import SideNav from '$lib/components/SideNav.svelte'
-  import PostModal from '../../lib/components/PostModal.svelte'
-
+  import PostModal from '$lib/components/PostModal.svelte'
 </script>
 
 <!-- <PostModal /> -->
