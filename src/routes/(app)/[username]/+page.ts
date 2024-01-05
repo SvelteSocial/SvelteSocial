@@ -20,4 +20,9 @@ export async function load(event) {
       queryFn: () => trpc(event).user.posts.query({ userId: user.id }),
     })
     .then((posts) => posts.map((post) => preloadImage(post.media[0])))
+  queryClient.prefetchQuery({
+    queryKey: ['user', user.username],
+    queryFn: () => trpc(event).user.get.query({ username: user.username }),
+    initialData: user,
+  })
 }

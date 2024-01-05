@@ -34,6 +34,7 @@ export function createPostQuery(
   //   queryFn: () => trpc(get(page)).post.get.query({ postId }),
   // })
   // return query
+  // TODO: Make a "noAuthor" query option for more efficiency
   if (initialData) {
     const query = createQuery({
       queryKey: ['post', postId],

@@ -5,8 +5,11 @@
 </script>
 
 <svelte:head>
-  <title>Home | Sveltekit</title>
-  <meta name="description" content="" />
+  <title>Home | SvelteSocial</title>
+  <meta
+    name="description"
+    content="SvelteSocial is a social media platform built with SvelteKit."
+  />
 </svelte:head>
 
 <main>
