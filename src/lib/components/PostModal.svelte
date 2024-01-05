@@ -7,7 +7,7 @@
   export let open: boolean
 </script>
 
-<Dialog.Root {open} onOpenChange={() => goto(`/${post.author}`)}>
+<Dialog.Root {open} onOpenChange={() => goto(`/${post.author.username}`, { noScroll: true })}>
   <Dialog.Content>
     <img src={post.media[0]} alt={post.caption} />
   </Dialog.Content>

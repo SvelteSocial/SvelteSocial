@@ -12,7 +12,7 @@
   export let user: PageUser
   export let localUser: User | undefined
 
-  $: postsQuery = createPostsQuery({ userId: user.id, username: user.username }, { queryClient })
+  $: postsQuery = createPostsQuery({ author: user }, { queryClient })
 
   $: isOwner = user.id === localUser?.id
   const followMutation = createMutation({
