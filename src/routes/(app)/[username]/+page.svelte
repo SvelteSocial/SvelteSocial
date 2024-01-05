@@ -8,7 +8,7 @@
   $: ({ user, localUser, queryClient } = data)
 
   $: userQuery = createUserQuery({ username: user.username }, { initialData: user })
-  $: postsQuery = createPostsQuery({ userId: user.id, username: user.username }, { queryClient })
+  $: postsQuery = createPostsQuery({ author: user }, { queryClient })
 </script>
 
 {#if $userQuery.isSuccess}

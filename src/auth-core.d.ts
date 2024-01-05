@@ -1,7 +1,8 @@
-import type { User as UserType } from '$lib/types'
+import type { UnsafeUser } from '$lib/types'
 
 declare module '@auth/core/types' {
   interface Session {
-    user: UserType
+    // Unsafe because it includes email and emailVerified
+    user: UnsafeUser
   }
 }
