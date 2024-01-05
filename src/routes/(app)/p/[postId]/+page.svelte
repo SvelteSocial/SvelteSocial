@@ -6,7 +6,7 @@
   import { writable } from 'svelte/store'
 
   export let data
-  $: ({ post } = data)
+  $: ({ id } = data.post)
 </script>
 
-<Post {post} />
+<Post postId={id} />
