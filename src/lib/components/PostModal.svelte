@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import * as Dialog from '$lib/components/ui/dialog'
   import { createPostQuery } from '$lib/queries'
-  import type { PagePost } from '$lib/types'
+  import Post from './Post.svelte'
 
   $: ({ selectedImageId } = $page.state)
   $: postQuery = selectedImageId ? createPostQuery({ postId: selectedImageId }) : null
-  $: post = $postQuery?.data
 </script>
 
 <Dialog.Root
@@ -19,9 +17,9 @@
     // })}
     history.back()}
 >
-  <Dialog.Content>
-    {#if post}
-      <img src={post.media[0]} alt={post.caption} />
+  <Dialog.Content class="max-w-fit p-0">
+    {#if $postQuery?.isSuccess}
+      <Post postId={$postQuery.data.id} />
     {/if}
   </Dialog.Content>
 </Dialog.Root>

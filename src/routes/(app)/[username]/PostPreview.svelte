@@ -5,6 +5,7 @@
   import { Skeleton } from '$lib/components/ui/skeleton'
   import { createPostQuery } from '$lib/queries'
   import type { MouseEventHandler } from 'svelte/elements'
+  import * as Card from '$lib/components/ui/card'
 
   export let postId: string | null
   $: postQuery = postId ? createPostQuery({ postId }) : null
@@ -29,7 +30,7 @@
 <!-- <button on:click={() => (postModalOpen = true)}>open</button> -->
 {#if $postQuery?.isSuccess}
   {@const post = $postQuery.data}
-  <div class="aspect-square">
+  <Card.Root class="aspect-square overflow-hidden">
     <a href="/p/{post.id}" class="group relative" on:click={handleClick}>
       <img
         src={post.media[0]}
@@ -42,7 +43,7 @@
         <p>hi</p>
       </div>
     </a>
-  </div>
+  </Card.Root>
 {:else}
-  <Skeleton class="aspect-square h-full w-full rounded-none" />
+  <Skeleton class="aspect-square h-full w-full" />
 {/if}
