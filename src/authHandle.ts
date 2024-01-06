@@ -4,6 +4,7 @@ import * as schema from '$lib/server/schema'
 import GitHub from '@auth/core/providers/github'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { SvelteKitAuth } from '@auth/sveltekit'
+import type { InferInsertModel } from 'drizzle-orm'
 import type { PgTableFn } from 'drizzle-orm/pg-core'
 
 const map = {
@@ -31,7 +32,8 @@ export default SvelteKitAuth({
           name: name ?? login,
           username: login,
           image: avatar_url,
-        }
+          bio: 'Hello world!',
+        } satisfies InferInsertModel<typeof schema.users>
       },
     }),
   ],
