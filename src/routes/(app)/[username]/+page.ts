@@ -4,7 +4,6 @@ import { preloadImage } from '$lib/utils'
 
 export async function load(event) {
   const { queryClient } = await event.parent()
-
   const { username } = event.params
 
   const user = await queryClient.fetchQuery({

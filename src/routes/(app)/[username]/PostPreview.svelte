@@ -7,7 +7,7 @@
   import type { MouseEventHandler } from 'svelte/elements'
 
   export let postId: string | null
-  $: postQuery = postId ? createPostQuery({ postId }, {}) : null
+  $: postQuery = postId ? createPostQuery({ postId }) : null
 
   const handleClick = ((e) => {
     e.preventDefault()

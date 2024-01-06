@@ -5,7 +5,7 @@
   import { createPostsQuery, createUserQuery } from '$lib/queries'
 
   export let data
-  $: ({ username, localUser, queryClient } = data)
+  $: ({ username, queryClient } = data)
 
   $: userQuery = createUserQuery<true>({ username })
   $: user = $userQuery.data
@@ -18,7 +18,7 @@
   <meta name="description" content="View {user.name}'s posts on SvelteSocial." />
 </svelte:head>
 <div class="py-8">
-  <Header {user} {localUser} />
+  <Header {user} />
   <div class="grid grid-cols-3 gap-4">
     {#each posts as { id }}
       <PostPreview postId={id} />

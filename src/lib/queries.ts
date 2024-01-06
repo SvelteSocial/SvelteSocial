@@ -1,7 +1,7 @@
 import { page } from '$app/stores'
 import { trpc } from './trpc/client'
 import type { RouterOutputs } from './trpc/routers/_app'
-import type { PageUser } from './types'
+import type { PagePost, PageUser } from './types'
 import {
   QueryClient,
   createQuery,
@@ -35,29 +35,13 @@ export function createPostsQuery(
   return query
 }
 
-export function createPostQuery(
-  { postId }: { postId: string },
-  { initialData }: { initialData?: RouterOutputs['post']['get'] }
-) {
-  // const query = createQuery({
-  //   queryKey: ['post', postId],
-  //   queryFn: () => trpc(get(page)).post.get.query({ postId }),
-  // })
-  // return query
+export function createPostQuery<TDefined extends boolean = false>({ postId }: { postId: string }) {
   // TODO: Make a "noAuthor" query option for more efficiency
-  if (initialData) {
-    const query = createQuery({
-      queryKey: ['post', postId],
-      queryFn: () => trpc(get(page)).post.get.query({ postId }),
-      initialData,
-    })
-    return query
-  }
   const query = createQuery({
     queryKey: ['post', postId],
     queryFn: () => trpc(get(page)).post.get.query({ postId }),
   })
-  return query
+  return query as GetQueryResult<TDefined, PagePost>
 }
 
 export function createUserQuery<TDefined extends boolean = false>({

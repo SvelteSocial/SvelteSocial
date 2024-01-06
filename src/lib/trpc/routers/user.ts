@@ -3,6 +3,7 @@ import {
   posts as postsSchema,
   users as usersSchema,
 } from '$lib/server/schema'
+import type { Follower } from '$lib/types'
 import { omit } from '$lib/utils'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
@@ -14,30 +15,35 @@ export const userRouter = router({
   get: publicProcedure.input(z.object({ username: z.string() })).query(async ({ ctx, input }) => {
     const session = await ctx.getSession()
     const localUser = session?.user
-    const user = await ctx.db.query.users.findFirst({
+    const _user = await ctx.db.query.users.findFirst({
       where: (user, { eq }) => eq(user.username, input.username),
       columns: {
         email: false,
         emailVerified: false,
       },
-      with: {
-        followers: {
-          where:
-            localUser && localUser.username !== input.username
-              ? (followers, { eq, or }) =>
-                  or(eq(followers.followerId, localUser.id), eq(followers.followedId, localUser.id))
-              : undefined,
-        },
-      },
+      with:
+        localUser && localUser.username !== input.username
+          ? {
+              followers: {
+                where: (followers, { eq, or }) =>
+                  or(
+                    eq(followers.followerId, localUser.id),
+                    eq(followers.followedId, localUser.id)
+                  ),
+              },
+            }
+          : {},
     })
+    // we need to do this because conditional `with` is not supported yet
+    const user = _user as typeof _user & { followers?: Follower[] }
     if (!user) {
       throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
     }
 
     const isFollowing =
-      !!localUser && user.followers.map(({ followerId }) => followerId).includes(localUser.id)
+      !!localUser && user.followers?.map(({ followerId }) => followerId).includes(localUser.id)
     const isFollowedBy =
-      !!localUser && user.followers.map(({ followedId }) => followedId).includes(localUser.id)
+      !!localUser && user.followers?.map(({ followedId }) => followedId).includes(localUser.id)
     const postsCountQuery = await ctx.db
       .select({ count: count() })
       .from(postsSchema)
@@ -54,6 +60,7 @@ export const userRouter = router({
       postsCountQuery,
       followersCountQuery,
       followingCountQuery,
+      // each query return looks like [{ count: 1 }], so we need to map it to [0].count
     ]).then((counts) => counts.map((count) => count[0].count))
 
     return {

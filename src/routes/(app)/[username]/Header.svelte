@@ -1,20 +1,19 @@
 <script lang="ts">
   import { createMutation } from '@tanstack/svelte-query'
   import * as Avatar from '$lib/components/ui/avatar'
-  import { trpc } from '$lib/trpc/client.js'
+  import { trpc } from '$lib/trpc/client'
   import { page } from '$app/stores'
   import { Button } from '$lib/components/ui/button'
   import { Loader2 } from 'lucide-svelte'
-  import type { PageUser, User } from '$lib/types'
+  import type { PageUser } from '$lib/types'
 
   export let user: PageUser
-  export let localUser: User | undefined
 
-  $: isOwner = user.id === localUser?.id
+  $: isOwner = user.id === $page.data.localUser?.id
+
   const followMutation = createMutation({
     mutationFn: () => trpc($page).user.follow.mutate({ userId: user.id }),
   })
-
   const formatter = new Intl.NumberFormat()
 </script>
 
