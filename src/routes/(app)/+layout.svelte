@@ -4,7 +4,7 @@
   import PostModal from '$lib/components/PostModal.svelte'
 </script>
 
-<!-- <PostModal /> -->
+<PostModal />
 <ProgressBar />
 
 <div class=" flex min-h-screen">

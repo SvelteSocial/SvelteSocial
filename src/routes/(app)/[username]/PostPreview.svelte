@@ -29,7 +29,6 @@
 <!-- <button on:click={() => (postModalOpen = true)}>open</button> -->
 {#if $postQuery?.isSuccess}
   {@const post = $postQuery.data}
-  <PostModal {post} open={$page.state.selectedImageId === post.id} />
   <div class="aspect-square">
     <a href="/p/{post.id}" class="group relative" on:click={handleClick}>
       <img
