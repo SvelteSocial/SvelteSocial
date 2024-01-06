@@ -2,6 +2,7 @@
   import { signOut } from '@auth/sveltekit/client'
   import { Button } from './ui/button'
   import { LogOut } from 'lucide-svelte'
+  import Upload from './Upload.svelte'
 </script>
 
 <aside class="p-4">
@@ -14,6 +15,9 @@
         <Button variant="outline" size="icon" on:click={() => signOut()}>
           <LogOut size="17" />
         </Button>
+      </li>
+      <li>
+        <Upload />
       </li>
     </ul>
   </nav>
