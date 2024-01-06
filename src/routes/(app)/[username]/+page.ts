@@ -12,12 +12,14 @@ export async function load(event) {
   })
   preloadImage(user.image)
 
-  queryClient
-    .fetchQuery({
-      queryKey: ['user', user.username, 'posts'],
-      queryFn: () => trpc(event).user.posts.query({ userId: user.id }),
-    })
-    .then((posts) => posts.map((post) => preloadImage(post.media[0])))
+  if (browser) {
+    queryClient
+      .fetchQuery({
+        queryKey: ['user', user.username, 'posts'],
+        queryFn: () => trpc(event).user.posts.query({ userId: user.id }),
+      })
+      .then((posts) => posts.map((post) => preloadImage(post.media[0])))
+  }
 
   return { username }
 }
