@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { QueryClient, createMutation } from '@tanstack/svelte-query'
+  import { createMutation } from '@tanstack/svelte-query'
   import * as Avatar from '$lib/components/ui/avatar'
   import { trpc } from '$lib/trpc/client.js'
   import { page } from '$app/stores'
   import { Button } from '$lib/components/ui/button'
   import { Loader2 } from 'lucide-svelte'
   import type { PageUser, User } from '$lib/types'
-  import { createPostsQuery } from '$lib/queries'
 
-  export let queryClient: QueryClient
   export let user: PageUser
   export let localUser: User | undefined
-
-  $: postsQuery = createPostsQuery({ author: user }, { queryClient })
 
   $: isOwner = user.id === localUser?.id
   const followMutation = createMutation({
@@ -48,11 +44,7 @@
     </div>
     <div class="mb-5 flex justify-around gap-8">
       <p>
-        {#if $postsQuery.isSuccess}
-          <span class="font-medium">{formatter.format($postsQuery.data.length)}</span>
-        {:else}
-          <Loader2 class="mr-1 inline animate-spin" aria-label="Loading..." size="20" />
-        {/if}
+        <span class="font-medium">{formatter.format(user.postsCount)}</span>
         posts
       </p>
       <p>

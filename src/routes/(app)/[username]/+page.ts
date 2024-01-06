@@ -1,17 +1,16 @@
 import { browser } from '$app/environment'
 import { trpc } from '$lib/trpc/client'
-
-function preloadImage(url: string) {
-  return new Promise<void>((resolve) => {
-    const img = new Image()
-    img.src = url
-    img.onload = () => resolve()
-  })
-}
+import { preloadImage } from '$lib/utils'
 
 export async function load(event) {
-  if (!browser) return
-  const { queryClient, user } = await event.parent()
+  const { queryClient } = await event.parent()
+
+  const { username } = event.params
+
+  const user = await queryClient.fetchQuery({
+    queryKey: ['user', username],
+    queryFn: () => trpc(event).user.get.query({ username: username }),
+  })
   preloadImage(user.image)
 
   queryClient
@@ -20,9 +19,6 @@ export async function load(event) {
       queryFn: () => trpc(event).user.posts.query({ userId: user.id }),
     })
     .then((posts) => posts.map((post) => preloadImage(post.media[0])))
-  queryClient.prefetchQuery({
-    queryKey: ['user', user.username],
-    queryFn: () => trpc(event).user.get.query({ username: user.username }),
-    initialData: user,
-  })
+
+  return { username }
 }

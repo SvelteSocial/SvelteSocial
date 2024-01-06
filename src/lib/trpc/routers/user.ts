@@ -23,7 +23,7 @@ export const userRouter = router({
       with: {
         followers: {
           where:
-            localUser && localUser.username === input.username
+            localUser && localUser.username !== input.username
               ? (followers, { eq, or }) =>
                   or(eq(followers.followerId, localUser.id), eq(followers.followedId, localUser.id))
               : undefined,
@@ -38,21 +38,32 @@ export const userRouter = router({
       !!localUser && user.followers.map(({ followerId }) => followerId).includes(localUser.id)
     const isFollowedBy =
       !!localUser && user.followers.map(({ followedId }) => followedId).includes(localUser.id)
+    const postsCountQuery = await ctx.db
+      .select({ count: count() })
+      .from(postsSchema)
+      .where(eq(postsSchema.authorId, user.id))
     const followersCountQuery = ctx.db
       .select({ count: count() })
       .from(followersSchema)
       .where(eq(followersSchema.followedId, user.id))
-      .then(([followersCount]) => followersCount.count)
     const followingCountQuery = ctx.db
       .select({ count: count() })
       .from(followersSchema)
       .where(eq(followersSchema.followerId, user.id))
-      .then(([followingCount]) => followingCount.count)
-    const [followersCount, followingCount] = await Promise.all([
+    const [postsCount, followersCount, followingCount] = await Promise.all([
+      postsCountQuery,
       followersCountQuery,
       followingCountQuery,
-    ])
-    return { ...omit(user, 'followers'), followersCount, followingCount, isFollowing, isFollowedBy }
+    ]).then((counts) => counts.map((count) => count[0].count))
+
+    return {
+      ...omit(user, 'followers'),
+      postsCount,
+      followersCount,
+      followingCount,
+      isFollowing,
+      isFollowedBy,
+    }
   }),
   followers: protectedProcedure
     .input(z.object({ userId: z.string() }))

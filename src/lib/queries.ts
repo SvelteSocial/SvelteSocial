@@ -5,10 +5,15 @@ import type { PageUser } from './types'
 import {
   QueryClient,
   createQuery,
+  useQueryClient,
   type CreateQueryResult,
   type DefinedCreateQueryResult,
 } from '@tanstack/svelte-query'
 import { get, type Unsubscriber } from 'svelte/store'
+
+type GetQueryResult<TDefined, TData> = TDefined extends true
+  ? DefinedCreateQueryResult<TData>
+  : CreateQueryResult<TData>
 
 let createPostsSubscription: Unsubscriber | undefined
 export function createPostsQuery(
@@ -55,18 +60,27 @@ export function createPostQuery(
   return query
 }
 
-type GetQueryResult<TDefined, TData> = TDefined extends TData
-  ? DefinedCreateQueryResult<TData>
-  : CreateQueryResult<TData>
-export function createUserQuery<TDefined extends PageUser | undefined>(
-  { username }: { username: string },
-  { initialData }: { initialData?: TDefined } = {}
-): GetQueryResult<TDefined, PageUser> {
-  // @ts-expect-error TODO: Fix this
+export function createUserQuery<TDefined extends boolean = false>({
+  username,
+}: {
+  username: string
+}) {
   const query = createQuery({
     queryKey: ['user', username],
     queryFn: () => trpc(get(page)).user.get.query({ username }),
-    ...(initialData && { initialData }),
   })
   return query as GetQueryResult<TDefined, PageUser>
 }
+
+// export function createUserQuery<TDefined extends PageUser | undefined>(
+//   { username }: { username: string },
+//   { initialData }: { initialData?: TDefined } = {}
+// ): GetQueryResult<TDefined, PageUser> {
+//   // @ts-expect-error TODO: Fix this
+//   const query = createQuery({
+//     queryKey: ['user', username],
+//     queryFn: () => trpc(get(page)).user.get.query({ username }),
+//     ...(initialData && { initialData }),
+//   })
+//   return query as GetQueryResult<TDefined, PageUser>
+// }

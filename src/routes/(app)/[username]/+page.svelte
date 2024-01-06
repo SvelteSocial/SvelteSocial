@@ -5,11 +5,11 @@
   import { createPostsQuery, createUserQuery } from '$lib/queries'
 
   export let data
-  $: ({ user: loadedUser, localUser, queryClient } = data)
+  $: ({ username, localUser, queryClient } = data)
 
-  $: userQuery = createUserQuery({ username: loadedUser.username }, { initialData: loadedUser })
+  $: userQuery = createUserQuery<true>({ username })
   $: user = $userQuery.data
-  $: postsQuery = createPostsQuery({ author: loadedUser }, { queryClient })
+  $: postsQuery = createPostsQuery({ author: user }, { queryClient })
   $: posts = $postsQuery.data || Array.from({ length: 9 }, () => ({ id: null }))
 </script>
 
@@ -18,7 +18,7 @@
   <meta name="description" content="View {user.name}'s posts on SvelteSocial." />
 </svelte:head>
 <div class="py-8">
-  <Header {queryClient} {user} {localUser} />
+  <Header {user} {localUser} />
   <div class="grid grid-cols-3 gap-4">
     {#each posts as { id }}
       <PostPreview postId={id} />
