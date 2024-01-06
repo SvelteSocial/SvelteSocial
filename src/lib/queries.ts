@@ -2,7 +2,12 @@ import { page } from '$app/stores'
 import { trpc } from './trpc/client'
 import type { RouterOutputs } from './trpc/routers/_app'
 import type { PageUser } from './types'
-import { QueryClient, createQuery } from '@tanstack/svelte-query'
+import {
+  QueryClient,
+  createQuery,
+  type CreateQueryResult,
+  type DefinedCreateQueryResult,
+} from '@tanstack/svelte-query'
 import { get, type Unsubscriber } from 'svelte/store'
 
 let createPostsSubscription: Unsubscriber | undefined
@@ -50,21 +55,18 @@ export function createPostQuery(
   return query
 }
 
-export function createUserQuery(
+type GetQueryResult<TDefined, TData> = TDefined extends TData
+  ? DefinedCreateQueryResult<TData>
+  : CreateQueryResult<TData>
+export function createUserQuery<TDefined extends PageUser | undefined>(
   { username }: { username: string },
-  { initialData }: { initialData?: RouterOutputs['user']['get'] }
-) {
-  if (initialData) {
-    const query = createQuery({
-      queryKey: ['user', username],
-      queryFn: () => trpc(get(page)).user.get.query({ username }),
-      initialData,
-    })
-    return query
-  }
+  { initialData }: { initialData?: TDefined } = {}
+): GetQueryResult<TDefined, PageUser> {
+  // @ts-expect-error TODO: Fix this
   const query = createQuery({
     queryKey: ['user', username],
     queryFn: () => trpc(get(page)).user.get.query({ username }),
+    ...(initialData && { initialData }),
   })
-  return query
+  return query as GetQueryResult<TDefined, PageUser>
 }

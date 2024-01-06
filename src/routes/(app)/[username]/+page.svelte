@@ -5,9 +5,11 @@
   import { createPostsQuery, createUserQuery } from '$lib/queries'
 
   export let data
-  $: ({ user, localUser, queryClient } = data)
+  $: ({ user: loadedUser, localUser, queryClient } = data)
 
-  $: postsQuery = createPostsQuery({ author: user }, { queryClient })
+  $: userQuery = createUserQuery({ username: loadedUser.username }, { initialData: loadedUser })
+  $: user = $userQuery.data
+  $: postsQuery = createPostsQuery({ author: loadedUser }, { queryClient })
   $: posts = $postsQuery.data || Array.from({ length: 9 }, () => ({ id: null }))
 </script>
 
