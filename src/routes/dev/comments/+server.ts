@@ -5,8 +5,8 @@ import { faker } from '@faker-js/faker'
 import { error, json } from '@sveltejs/kit'
 
 export async function GET() {
-  console.log('GET')
-  if (!dev) return
+  // console.log('GET')
+  // if (!dev) return
   const posts = await db.query.posts.findMany()
   if (!posts.length) return error(404, 'No posts in database')
 

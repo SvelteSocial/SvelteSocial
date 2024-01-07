@@ -22,8 +22,8 @@ function getRandomImage() {
 }
 
 export async function GET() {
-  console.log('GET')
-  if (!dev) return
+  // console.log('GET')
+  // if (!dev) return
   const user = await db.query.users.findFirst({ columns: { id: true } })
   if (!user) return error(404, 'No users in database')
   const posts = await db
