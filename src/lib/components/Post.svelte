@@ -40,10 +40,12 @@
 {#if $postQuery.isSuccess}
   {@const post = $postQuery.data}
   {@const author = post.author}
-  <Card.Root class="flex">
-    <img src={post.media[0]} alt="" />
-    <Separator orientation="vertical" />
-    <div>
+  <Card.Root class="flex flex-row gap-4 overflow-hidden">
+    <div class="flex flex-1 flex-row">
+      <img src={post.media[0]} alt="" class="mx-auto object-contain" />
+      <Separator orientation="vertical" />
+    </div>
+    <div class="">
       <header class="p-4">
         <a href="/{author.username}" class="flex items-center font-medium">
           <Avatar.Root class="mr-3">
@@ -54,7 +56,7 @@
         </a>
       </header>
       <Separator />
-      <ul class="flex flex-col gap-6 p-4">
+      <ul class="flex h-60 w-72 flex-col gap-6 overflow-auto p-4">
         {#if post.caption}
           <div class="flex">
             <Avatar.Root class="mr-3">
@@ -68,15 +70,17 @@
           </div>
         {/if}
         {#if $commentsQuery.isSuccess}
-          {#each $commentsQuery.data as comment}
+          {#each [...$commentsQuery.data, ...$commentsQuery.data, ...$commentsQuery.data] as comment}
             {@const author = comment.author}
             <li class="flex">
-              <Avatar.Root class="mr-3">
-                <Avatar.Image src={author.image} alt={author.username} />
-                <Avatar.Fallback>{author.username}</Avatar.Fallback>
-              </Avatar.Root>
+              <a href="/{author.username}">
+                <Avatar.Root class="mr-3">
+                  <Avatar.Image src={author.image} alt={author.username} />
+                  <Avatar.Fallback>{author.username}</Avatar.Fallback>
+                </Avatar.Root>
+              </a>
               <p>
-                <span class="font-medium">{author.username}</span>
+                <a class="font-medium" href="/{author.username}">{author.username}</a>
                 {comment.content}
               </p>
             </li>
@@ -85,6 +89,11 @@
           {/each}
         {/if}
       </ul>
+      <Separator />
+      <div class="flex gap-4 p-4">
+        <button>Like</button>
+        <button>Comment</button>
+      </div>
     </div>
   </Card.Root>
 {/if}
