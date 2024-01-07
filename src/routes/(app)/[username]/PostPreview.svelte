@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto, pushState } from '$app/navigation'
-  import { page } from '$app/stores'
-  import PostModal from '$lib/components/PostModal.svelte'
   import { Skeleton } from '$lib/components/ui/skeleton'
   import { createPostQuery } from '$lib/queries'
   import type { MouseEventHandler } from 'svelte/elements'
   import * as Card from '$lib/components/ui/card'
+  import { selectedPostId } from '$lib/stores'
 
   export let postId: string | null
   $: postQuery = postId ? createPostQuery({ postId }) : null
@@ -15,16 +14,8 @@
     if (e.metaKey || innerWidth < 640 || !$postQuery?.isSuccess) return
     e.preventDefault()
 
-    const { href } = e.currentTarget
-    try {
-      pushState(href, { selectedImageId: $postQuery.data.id })
-    } catch {
-      goto(href)
-    }
+    $selectedPostId = postId
   }) satisfies MouseEventHandler<HTMLAnchorElement>
-
-  // $: postModalOpen = $page.state.selectedImageId === post.id
-  // let postModalOpen = false
 </script>
 
 <!-- <button on:click={() => (postModalOpen = true)}>open</button> -->

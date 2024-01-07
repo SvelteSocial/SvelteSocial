@@ -4,6 +4,8 @@
   import { Separator } from '$lib/components/ui/separator'
   import { createPostCommentsQuery, createPostQuery } from '$lib/queries'
   import { onMount } from 'svelte'
+  import { copy } from 'svelte-copy'
+  import { toast } from 'svelte-sonner'
 
   export let postId: string
   $: postQuery = createPostQuery({ postId })
@@ -93,6 +95,16 @@
       <div class="flex gap-4 p-4">
         <button>Like</button>
         <button>Comment</button>
+        <button
+          use:copy={`/p/${post.id}`}
+          on:svelte-copy={() =>
+            toast.success('Copied link to clipboard!', {
+              description: `${window.location.origin}/p/${post.id}`,
+              duration: 1750,
+            })}
+        >
+          Share
+        </button>
       </div>
     </div>
   </Card.Root>

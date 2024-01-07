@@ -1,9 +1,11 @@
 <script lang="ts">
   import ProgressBar from '$lib/components/ProgressBar.svelte'
   import SideNav from '$lib/components/SideNav.svelte'
-  import PostModal from '$lib/components/PostModal.svelte'
+  import PostModal from './PostModal.svelte'
+  import { Toaster } from '$lib/components/ui/sonner'
 </script>
 
+<Toaster />
 <PostModal />
 <ProgressBar />
 

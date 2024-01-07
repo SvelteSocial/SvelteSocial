@@ -7,9 +7,7 @@ declare global {
     interface PageData {
       localUser: UnsafeUser | undefined
     }
-    interface PageState {
-      selectedImageId: string | undefined
-    }
+    // interface PageState {}
     // interface Platform {}
   }
 }
