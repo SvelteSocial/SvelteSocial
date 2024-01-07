@@ -1,4 +1,8 @@
-import type { users as usersSchema, followers as followersSchema } from './server/schema'
+import type {
+  users as usersSchema,
+  followers as followersSchema,
+  postLikes as postLikesSchema,
+} from './server/schema'
 import type { RouterOutputs } from './trpc/routers/_app'
 import type { InferSelectModel } from 'drizzle-orm'
 
@@ -10,3 +14,4 @@ export type PagePost = RouterOutputs['post']['get']
 // export type Comment = InferSelectModel<typeof postComments>
 export type PageComment = RouterOutputs['post']['comments'][number]
 export type Follower = InferSelectModel<typeof followersSchema>
+export type PostLike = InferSelectModel<typeof postLikesSchema>

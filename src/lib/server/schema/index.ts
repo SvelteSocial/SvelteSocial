@@ -75,7 +75,7 @@ export const postLikes = pgTable(
   'post_like',
   {
     postId: text('post_id')
-      .references(() => users.id, { onDelete: 'cascade' })
+      .references(() => posts.id, { onDelete: 'cascade' })
       .notNull(),
     userId: text('user_id')
       .references(() => users.id, { onDelete: 'cascade' })
