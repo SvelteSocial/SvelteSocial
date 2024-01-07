@@ -7,9 +7,9 @@
 <PostModal />
 <ProgressBar />
 
-<div class=" flex min-h-screen">
+<div class="flex min-h-screen">
   <SideNav />
-  <main class="container flex-1">
+  <main class="mx-auto flex-1 px-10 pt-10 2xl:max-w-5xl">
     <slot />
   </main>
 </div>

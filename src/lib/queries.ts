@@ -1,7 +1,7 @@
 import { page } from '$app/stores'
 import { trpc } from './trpc/client'
 import type { RouterOutputs } from './trpc/routers/_app'
-import type { PagePost, PageUser } from './types'
+import type { PageComment, PagePost, PageUser } from './types'
 import {
   QueryClient,
   createQuery,
@@ -42,6 +42,18 @@ export function createPostQuery<TDefined extends boolean = false>({ postId }: { 
     queryFn: () => trpc(get(page)).post.get.query({ postId }),
   })
   return query as GetQueryResult<TDefined, PagePost>
+}
+
+export function createPostCommentsQuery<TDefined extends boolean = false>({
+  postId,
+}: {
+  postId: string
+}) {
+  const query = createQuery({
+    queryKey: ['post', postId, 'comments'],
+    queryFn: () => trpc(get(page)).post.comments.query({ postId }),
+  })
+  return query as GetQueryResult<TDefined, PageComment[]>
 }
 
 export function createUserQuery<TDefined extends boolean = false>({

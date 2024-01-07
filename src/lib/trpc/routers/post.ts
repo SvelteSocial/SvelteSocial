@@ -23,4 +23,20 @@ export const postRouter = router({
     }
     return post
   }),
+  comments: publicProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const comments = await ctx.db.query.postComments.findMany({
+        where: (comment, { eq }) => eq(comment.postId, input.postId),
+        with: {
+          author: {
+            columns: {
+              username: true,
+              image: true,
+            },
+          },
+        },
+      })
+      return comments
+    }),
 })

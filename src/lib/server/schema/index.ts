@@ -100,7 +100,7 @@ export const postLikesRelations = relations(postLikes, ({ one }) => ({
 export const postComments = pgTable('post_comment', {
   id: uuid('id').defaultRandom().primaryKey(),
   postId: text('post_id')
-    .references(() => users.id, { onDelete: 'cascade' })
+    .references(() => posts.id, { onDelete: 'cascade' })
     .notNull(),
   authorId: text('author_id')
     .references(() => users.id, { onDelete: 'cascade' })
@@ -113,7 +113,7 @@ export const postCommentsRelations = relations(postComments, ({ one }) => ({
     fields: [postComments.postId],
     references: [posts.id],
   }),
-  user: one(users, {
+  author: one(users, {
     fields: [postComments.authorId],
     references: [users.id],
   }),

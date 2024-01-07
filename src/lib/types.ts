@@ -7,4 +7,6 @@ export type UnsafeUser = InferSelectModel<typeof usersSchema>
 export type PageUser = RouterOutputs['user']['get']
 // export type Post = InferSelectModel<typeof posts>
 export type PagePost = RouterOutputs['post']['get']
+// export type Comment = InferSelectModel<typeof postComments>
+export type PageComment = RouterOutputs['post']['comments'][number]
 export type Follower = InferSelectModel<typeof followersSchema>
