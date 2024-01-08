@@ -1,6 +1,6 @@
 import { page } from '$app/stores'
 import { trpc } from './trpc/client'
-import type { PostLike, PageComment, PagePost, PageUser, SavedPost } from './types'
+import type { PageComment, PagePost, PageUser } from './types'
 import {
   QueryClient,
   createQuery,
@@ -54,7 +54,7 @@ export function createPostCommentsQuery<TDefined extends boolean = false>({
   return query as GetQueryResult<TDefined, PageComment[]>
 }
 
-export function createPostLikedQuery<TDefined extends boolean = false>({
+export function createLikedPostQuery<TDefined extends boolean = false>({
   postId,
 }: {
   postId: string

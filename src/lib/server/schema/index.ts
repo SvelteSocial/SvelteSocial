@@ -71,32 +71,6 @@ export const postsRelations = relations(posts, ({ one }) => ({
   }),
 }))
 
-export const postLikes = pgTable(
-  'post_like',
-  {
-    postId: text('post_id')
-      .references(() => posts.id, { onDelete: 'cascade' })
-      .notNull(),
-    userId: text('user_id')
-      .references(() => users.id, { onDelete: 'cascade' })
-      .notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  },
-  ({ postId, userId }) => ({
-    pk: primaryKey({ columns: [postId, userId] }),
-  })
-)
-export const postLikesRelations = relations(postLikes, ({ one }) => ({
-  post: one(posts, {
-    fields: [postLikes.postId],
-    references: [posts.id],
-  }),
-  user: one(users, {
-    fields: [postLikes.userId],
-    references: [users.id],
-  }),
-}))
-
 export const postComments = pgTable('post_comment', {
   id: uuid('id').defaultRandom().primaryKey(),
   postId: text('post_id')
@@ -115,6 +89,32 @@ export const postCommentsRelations = relations(postComments, ({ one }) => ({
   }),
   author: one(users, {
     fields: [postComments.authorId],
+    references: [users.id],
+  }),
+}))
+
+export const likedPosts = pgTable(
+  'liked_post',
+  {
+    postId: text('post_id')
+      .references(() => posts.id, { onDelete: 'cascade' })
+      .notNull(),
+    userId: text('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  ({ postId, userId }) => ({
+    pk: primaryKey({ columns: [postId, userId] }),
+  })
+)
+export const likedPostsRelations = relations(likedPosts, ({ one }) => ({
+  post: one(posts, {
+    fields: [likedPosts.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [likedPosts.userId],
     references: [users.id],
   }),
 }))

@@ -4,13 +4,13 @@
   import { Button } from '$lib/components/ui/button'
   import { createMutation } from '@tanstack/svelte-query'
   import { trpc } from '$lib/trpc/client'
-  import { createPostLikedQuery, createPostSavedQuery } from '$lib/queries'
+  import { createLikedPostQuery, createPostSavedQuery } from '$lib/queries'
   import type { PagePost } from '$lib/types'
 
   export let postId: string
   $: ({ localUser, queryClient } = $page.data)
 
-  const hasLikedQuery = createPostLikedQuery({ postId })
+  const hasLikedQuery = createLikedPostQuery({ postId })
   const hasSavedQuery = createPostSavedQuery({ postId })
   $: hasLiked = $hasLikedQuery.data ?? false
   $: hasSaved = $hasSavedQuery.data ?? false

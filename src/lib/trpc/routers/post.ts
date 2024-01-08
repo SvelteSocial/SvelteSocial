@@ -1,4 +1,4 @@
-import { postLikes as postLikesSchema, savedPosts as savedPostsSchema } from '$lib/server/schema'
+import { likedPosts as likedPostsSchema, savedPosts as savedPostsSchema } from '$lib/server/schema'
 import type { Context } from '../context'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
@@ -27,8 +27,8 @@ export const postRouter = router({
     }
     const [{ count: likesCount }] = await ctx.db
       .select({ count: count() })
-      .from(postLikesSchema)
-      .where(eq(postLikesSchema.postId, input.postId))
+      .from(likedPostsSchema)
+      .where(eq(likedPostsSchema.postId, input.postId))
 
     return { ...post, likesCount }
   }),
@@ -52,7 +52,7 @@ export const postRouter = router({
     .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { user } = ctx.session
-      const liked = await ctx.db.query.postLikes.findFirst({
+      const liked = await ctx.db.query.likedPosts.findFirst({
         where: (like, { eq }) => and(eq(like.postId, input.postId), eq(like.userId, user.id)),
       })
       return !!liked
@@ -71,16 +71,18 @@ export const postRouter = router({
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx.session
-      const likes = await ctx.db.query.postLikes.findMany({
+      const likes = await ctx.db.query.likedPosts.findMany({
         where: (like, { eq }) => eq(like.postId, input.postId),
       })
       const hasLiked = likes.some((like) => like.userId === user.id)
       if (hasLiked) {
         await ctx.db
-          .delete(postLikesSchema)
-          .where(and(eq(postLikesSchema.postId, input.postId), eq(postLikesSchema.userId, user.id)))
+          .delete(likedPostsSchema)
+          .where(
+            and(eq(likedPostsSchema.postId, input.postId), eq(likedPostsSchema.userId, user.id))
+          )
       } else {
-        await ctx.db.insert(postLikesSchema).values({
+        await ctx.db.insert(likedPostsSchema).values({
           postId: input.postId,
           userId: user.id,
         })
