@@ -1,30 +1,39 @@
 <script lang="ts">
   import { page } from '$app/stores'
-  import { Heart, Loader2, MessageCircle, Send } from 'lucide-svelte'
+  import { Bookmark, Heart, Loader2, MessageCircle, Send } from 'lucide-svelte'
   import { Button } from '$lib/components/ui/button'
   import { createMutation } from '@tanstack/svelte-query'
   import { trpc } from '$lib/trpc/client'
-  import { createPostLikesQuery } from '$lib/queries'
-  import type { PostLike } from '$lib/types'
+  import { createPostLikedQuery, createPostSavedQuery } from '$lib/queries'
+  import type { PagePost } from '$lib/types'
 
   export let postId: string
   $: ({ localUser, queryClient } = $page.data)
 
-  const postLikes = createPostLikesQuery({ postId })
-  $: liked = $postLikes.data?.some((like) => like.userId === localUser?.id) ?? false
+  const hasLikedQuery = createPostLikedQuery({ postId })
+  const hasSavedQuery = createPostSavedQuery({ postId })
+  $: hasLiked = $hasLikedQuery.data ?? false
+  $: hasSaved = $hasSavedQuery.data ?? false
 
-  const likeMutation = createMutation({
-    mutationFn: () => trpc($page).post.like.mutate({ postId }),
-    onSuccess: setLikes,
+  const toggleLikeMutation = createMutation({
+    mutationFn: () => trpc($page).post.toggleLike.mutate({ postId }),
+    onSuccess: setLiked,
+  })
+  const savedPostMutation = createMutation({
+    mutationFn: () => trpc($page).post.toggleSave.mutate({ postId }),
+    onSuccess: setSaved,
   })
 
-  function setLikes({ liked }: { liked: boolean }) {
-    queryClient.setQueryData<PostLike[]>(['post', postId, 'likes'], (old) => {
-      if (liked) {
-        return [...old!, { postId, userId: localUser!.id, createdAt: new Date() }]
-      }
-      return old!.filter((like) => like.userId !== localUser!.id)
+  function setLiked({ liked }: { liked: boolean }) {
+    queryClient.setQueryData<boolean>(['post', postId, 'liked'], liked)
+    queryClient.setQueryData<PagePost>(['post', postId], (old) => {
+      const previousLikesCount = old!.likesCount
+      const likesCount = previousLikesCount + (liked ? 1 : -1)
+      return { ...old!, likesCount }
     })
+  }
+  function setSaved({ saved }: { saved: boolean }) {
+    queryClient.setQueryData<boolean>(['post', postId, 'saved'], saved)
   }
 </script>
 
@@ -34,18 +43,30 @@
       <Button
         variant="ghost"
         size="icon"
-        on:click={() => $likeMutation.mutate()}
-        disabled={$postLikes.isFetching || $likeMutation.isPending}
+        on:click={() => $toggleLikeMutation.mutate()}
+        disabled={$hasLikedQuery.isFetching || $toggleLikeMutation.isPending}
       >
-        {#if $postLikes.isFetching || $likeMutation.isPending}
+        {#if $hasLikedQuery.isFetching || $toggleLikeMutation.isPending}
           <Loader2 class="animate-spin" />
         {:else}
-          <Heart color={liked ? 'red' : undefined} fill={liked ? 'red' : undefined} />
+          <!-- red-600 -->
+          <Heart color={hasLiked ? '#dc2626' : undefined} fill={hasLiked ? '#dc2626' : undefined} />
         {/if}
       </Button>
       <Button variant="ghost" size="icon"><MessageCircle /></Button>
       <Button variant="ghost" size="icon"><Send /></Button>
     </div>
-    <Button variant="ghost" size="icon">Save</Button>
+    <Button
+      variant="ghost"
+      size="icon"
+      on:click={() => $savedPostMutation.mutate()}
+      disabled={$hasSavedQuery.isFetching || $savedPostMutation.isPending}
+    >
+      {#if $hasSavedQuery.isFetching || $savedPostMutation.isPending}
+        <Loader2 class="animate-spin" />
+      {:else}
+        <Bookmark color={hasSaved ? 'white' : undefined} fill={hasSaved ? 'white' : undefined} />
+      {/if}
+    </Button>
   </div>
 </div>

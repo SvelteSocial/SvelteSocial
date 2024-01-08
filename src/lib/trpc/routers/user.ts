@@ -1,13 +1,9 @@
-import {
-  followers as followersSchema,
-  posts as postsSchema,
-  users as usersSchema,
-} from '$lib/server/schema'
+import { followers as followersSchema, posts as postsSchema } from '$lib/server/schema'
 import type { Follower } from '$lib/types'
 import { omit } from '$lib/utils'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
-import { count, eq, getTableColumns, or } from 'drizzle-orm'
+import { count, eq, getTableColumns } from 'drizzle-orm'
 import { union } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
@@ -20,6 +16,7 @@ export const userRouter = router({
       columns: {
         email: false,
         emailVerified: false,
+        isAdmin: false,
       },
       with:
         localUser && localUser.username !== input.username
@@ -72,27 +69,26 @@ export const userRouter = router({
       isFollowedBy,
     }
   }),
-  followers: protectedProcedure
-    .input(z.object({ userId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const query = ctx.db.query.followers.findMany({
-        where: (followers, { eq }) => eq(followers.followedId, input.userId),
-        columns: {},
-        with: {
-          follower: {
-            columns: {
-              id: true,
-              username: true,
-              image: true,
-              bio: true,
-              createdAt: true,
-            },
+  followers: protectedProcedure.query(async ({ ctx }) => {
+    const { user } = ctx.session
+    const query = ctx.db.query.followers.findMany({
+      where: (followers, { eq }) => eq(followers.followedId, user.id),
+      columns: {},
+      with: {
+        follower: {
+          columns: {
+            id: true,
+            username: true,
+            image: true,
+            bio: true,
+            createdAt: true,
           },
         },
-      })
-      const followers = (await query).map(({ follower }) => follower)
-      return followers
-    }),
+      },
+    })
+    const followers = (await query).map(({ follower }) => follower)
+    return followers
+  }),
   posts: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
     const posts = await union(
       ctx.db.select().from(postsSchema).where(eq(postsSchema.authorId, input.userId)),
@@ -107,14 +103,13 @@ export const userRouter = router({
   follow: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { userId } = input
       const local = ctx.session.user
-      if (userId === local.id) {
+      if (input.userId === local.id) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot follow yourself' })
       }
       const existingFollow = await ctx.db.query.followers.findFirst({
         where: (followers, { and, eq }) =>
-          and(eq(followers.followerId, local.id), eq(followers.followedId, userId)),
+          and(eq(followers.followerId, local.id), eq(followers.followedId, input.userId)),
       })
       if (existingFollow) {
         throw new TRPCError({
@@ -122,6 +117,15 @@ export const userRouter = router({
           message: 'You are already following this user',
         })
       }
-      await ctx.db.insert(followersSchema).values({ followerId: local.id, followedId: userId })
+      await ctx.db
+        .insert(followersSchema)
+        .values({ followerId: local.id, followedId: input.userId })
     }),
+  // savedPosts: protectedProcedure.query(async ({ ctx }) => {
+  //   const { user } = ctx.session
+  //   const saved = await ctx.db.query.savedPosts.findMany({
+  //     where: (saved, { eq }) => eq(saved.userId, user.id),
+  //   })
+  //   return saved
+  // }),
 })

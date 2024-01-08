@@ -118,3 +118,29 @@ export const postCommentsRelations = relations(postComments, ({ one }) => ({
     references: [users.id],
   }),
 }))
+
+export const savedPosts = pgTable(
+  'saved_post',
+  {
+    postId: text('post_id')
+      .references(() => posts.id, { onDelete: 'cascade' })
+      .notNull(),
+    userId: text('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  ({ postId, userId }) => ({
+    pk: primaryKey({ columns: [postId, userId] }),
+  })
+)
+export const savedPostsRelations = relations(savedPosts, ({ one }) => ({
+  post: one(posts, {
+    fields: [savedPosts.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [savedPosts.userId],
+    references: [users.id],
+  }),
+}))

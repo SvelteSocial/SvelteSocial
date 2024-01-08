@@ -18,8 +18,12 @@ export async function load(event) {
       queryFn: () => trpc(event).post.comments.query({ postId }),
     })
     queryClient.prefetchQuery({
-      queryKey: ['post', postId, 'likes'],
-      queryFn: () => trpc(event).post.likes.query({ postId }),
+      queryKey: ['post', postId, 'liked'],
+      queryFn: () => trpc(event).post.liked.query({ postId }),
+    })
+    queryClient.prefetchQuery({
+      queryKey: ['post', postId, 'saved'],
+      queryFn: () => trpc(event).post.saved.query({ postId }),
     })
   }
 

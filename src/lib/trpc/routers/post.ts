@@ -1,16 +1,9 @@
-import { db } from '$lib/server/db'
-import { postLikes } from '$lib/server/schema'
+import { postLikes as postLikesSchema, savedPosts as savedPostsSchema } from '$lib/server/schema'
 import type { Context } from '../context'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
 import { and, count, eq } from 'drizzle-orm'
 import { z } from 'zod'
-
-async function getLikes(postId: string, db: Context['db']) {
-  return await db.query.postLikes.findMany({
-    where: (like, { eq }) => eq(like.postId, postId),
-  })
-}
 
 export const postRouter = router({
   get: publicProcedure.input(z.object({ postId: z.string() })).query(async ({ ctx, input }) => {
@@ -21,6 +14,7 @@ export const postRouter = router({
           columns: {
             email: false,
             emailVerified: false,
+            isAdmin: false,
           },
         },
       },
@@ -32,11 +26,9 @@ export const postRouter = router({
       })
     }
     const [{ count: likesCount }] = await ctx.db
-      .select({
-        count: count(),
-      })
-      .from(postLikes)
-      .where(eq(postLikes.postId, input.postId))
+      .select({ count: count() })
+      .from(postLikesSchema)
+      .where(eq(postLikesSchema.postId, input.postId))
 
     return { ...post, likesCount }
   }),
@@ -56,29 +48,65 @@ export const postRouter = router({
       })
       return comments
     }),
-  likes: protectedProcedure
+  liked: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const likes = await getLikes(input.postId, ctx.db)
-      return likes
+      const { user } = ctx.session
+      const liked = await ctx.db.query.postLikes.findFirst({
+        where: (like, { eq }) => and(eq(like.postId, input.postId), eq(like.userId, user.id)),
+      })
+      return !!liked
     }),
-  like: protectedProcedure
+  saved: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { user } = ctx.session
+      const saved = await ctx.db.query.savedPosts.findFirst({
+        where: (savedPost, { eq }) =>
+          and(eq(savedPost.postId, input.postId), eq(savedPost.userId, user.id)),
+      })
+      return !!saved
+    }),
+  toggleLike: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx.session
-      const likes = await getLikes(input.postId, ctx.db)
+      const likes = await ctx.db.query.postLikes.findMany({
+        where: (like, { eq }) => eq(like.postId, input.postId),
+      })
       const hasLiked = likes.some((like) => like.userId === user.id)
       if (hasLiked) {
         await ctx.db
-          .delete(postLikes)
-          .where(and(eq(postLikes.postId, input.postId), eq(postLikes.userId, user.id)))
-        return { liked: false }
+          .delete(postLikesSchema)
+          .where(and(eq(postLikesSchema.postId, input.postId), eq(postLikesSchema.userId, user.id)))
+      } else {
+        await ctx.db.insert(postLikesSchema).values({
+          postId: input.postId,
+          userId: user.id,
+        })
       }
-
-      await ctx.db.insert(postLikes).values({
-        postId: input.postId,
-        userId: user.id,
+      return { liked: !hasLiked }
+    }),
+  toggleSave: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { user } = ctx.session
+      const savedPosts = await ctx.db.query.savedPosts.findMany({
+        where: (savedPost, { eq }) => eq(savedPost.postId, input.postId),
       })
-      return { liked: true }
+      const hasSaved = savedPosts.some((savedPost) => savedPost.userId === user.id)
+      if (hasSaved) {
+        await ctx.db
+          .delete(savedPostsSchema)
+          .where(
+            and(eq(savedPostsSchema.postId, input.postId), eq(savedPostsSchema.userId, user.id))
+          )
+      } else {
+        await ctx.db.insert(savedPostsSchema).values({
+          postId: input.postId,
+          userId: user.id,
+        })
+      }
+      return { saved: !hasSaved }
     }),
 })

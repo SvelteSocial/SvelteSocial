@@ -1,11 +1,9 @@
 import { page } from '$app/stores'
 import { trpc } from './trpc/client'
-import type { RouterOutputs } from './trpc/routers/_app'
-import type { PostLike, PageComment, PagePost, PageUser } from './types'
+import type { PostLike, PageComment, PagePost, PageUser, SavedPost } from './types'
 import {
   QueryClient,
   createQuery,
-  useQueryClient,
   type CreateQueryResult,
   type DefinedCreateQueryResult,
 } from '@tanstack/svelte-query'
@@ -24,12 +22,11 @@ export function createPostsQuery(
     queryKey: ['user', author.username, 'posts'],
     queryFn: () => trpc(get(page)).user.posts.query({ userId: author.id }),
   })
-  createPostsSubscription ??= query.subscribe((query) => {
-    if (query.isSuccess) {
-      for (const post of query.data) {
-        console.log('setting post', post.id)
-        queryClient.setQueryData(['post', post.id], { ...post, author })
-      }
+  createPostsSubscription ??= query.subscribe(({ isSuccess, data }) => {
+    if (!isSuccess) return
+    for (const post of data) {
+      console.log('setting post', post.id)
+      queryClient.setQueryData(['post', post.id], { ...post, author })
     }
   })
   return query
@@ -53,20 +50,43 @@ export function createPostCommentsQuery<TDefined extends boolean = false>({
     queryKey: ['post', postId, 'comments'],
     queryFn: () => trpc(get(page)).post.comments.query({ postId }),
   })
+  console.log('creating comments query', postId)
   return query as GetQueryResult<TDefined, PageComment[]>
 }
 
-export function createPostLikesQuery<TDefined extends boolean = false>({
+export function createPostLikedQuery<TDefined extends boolean = false>({
   postId,
 }: {
   postId: string
 }) {
   const query = createQuery({
-    queryKey: ['post', postId, 'likes'],
-    queryFn: () => trpc(get(page)).post.likes.query({ postId }),
+    queryKey: ['post', postId, 'liked'],
+    queryFn: () => trpc(get(page)).post.liked.query({ postId }),
   })
-  return query as GetQueryResult<TDefined, PostLike[]>
+  return query as GetQueryResult<TDefined, boolean>
 }
+export function createPostSavedQuery<TDefined extends boolean = false>({
+  postId,
+}: {
+  postId: string
+}) {
+  const query = createQuery({
+    queryKey: ['post', postId, 'saved'],
+    queryFn: () => trpc(get(page)).post.saved.query({ postId }),
+  })
+  return query as GetQueryResult<TDefined, boolean>
+}
+// export function createPostLikesQuery<TDefined extends boolean = false>({
+//   postId,
+// }: {
+//   postId: string
+// }) {
+//   const query = createQuery({
+//     queryKey: ['post', postId, 'likes'],
+//     queryFn: () => trpc(get(page)).post.likes.query({ postId }),
+//   })
+//   return query as GetQueryResult<TDefined, PostLike[]>
+// }
 
 export function createUserQuery<TDefined extends boolean = false>({
   username,
@@ -79,6 +99,22 @@ export function createUserQuery<TDefined extends boolean = false>({
   })
   return query as GetQueryResult<TDefined, PageUser>
 }
+
+// let createSavedPostsSubscription: Unsubscriber | undefined
+// export function createSavedPostsQuery<TDefined extends boolean = false>() {
+//   const query = createQuery({
+//     queryKey: ['savedPosts'],
+//     queryFn: () => trpc(get(page)).user.savedPosts.query(),
+//   })
+//   createSavedPostsSubscription ??= query.subscribe(({ isSuccess, data }) => {
+//     if (!isSuccess) return
+//     for (const { postId } of data) {
+//       console.log('setting saved post', postId)
+//       createPostQuery({ postId })
+//     }
+//   })
+//   return query as GetQueryResult<TDefined, SavedPost[]>
+// }
 
 // export function createUserQuery<TDefined extends PageUser | undefined>(
 //   { username }: { username: string },
