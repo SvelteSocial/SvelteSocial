@@ -8,6 +8,7 @@
   import { toast } from 'svelte-sonner'
   import PostActions from './PostActions.svelte'
   import { DateTime } from 'luxon'
+  import PostCreateComment from './PostCreateComment.svelte'
 
   export let postId: string
   $: postQuery = createPostQuery<true>({ postId })
@@ -54,7 +55,7 @@
     <Separator />
     <ul class="flex h-60 w-80 flex-col gap-6 overflow-auto p-4">
       {#if post.caption}
-        <div class="flex">
+        <li class="flex">
           <Avatar.Root class="mr-3">
             <Avatar.Image src={author.image} alt={author.name} />
             <Avatar.Fallback>{author.name}</Avatar.Fallback>
@@ -63,10 +64,10 @@
             <span class="font-medium">{author.name}</span>
             {post.caption}
           </p>
-        </div>
+        </li>
       {/if}
       {#if $commentsQuery.isSuccess}
-        {#each [...$commentsQuery.data, ...$commentsQuery.data, ...$commentsQuery.data] as comment}
+        {#each $commentsQuery.data as comment}
           {@const author = comment.author}
           <li class="flex">
             <a href="/{author.username}">
@@ -86,15 +87,18 @@
       {/if}
     </ul>
     <Separator />
-    <div class="p-4">
-      <PostActions postId={post.id}>
-        <svelte:fragment slot="top" />
+    <div>
+      <div class="p-4">
+        <PostActions postId={post.id}></PostActions>
         <p>{post.likesCount} like{post.likesCount ? '' : 's'}</p>
         <p class="text-sm text-muted-foreground">
           {DateTime.fromJSDate(post.createdAt).toRelative()}
         </p>
-        <svelte:fragment slot="bottom" />
-      </PostActions>
+      </div>
+      <Separator />
+      <div class="p-4">
+        <PostCreateComment postId={post.id} />
+      </div>
     </div>
     <!-- <div class="flex gap-4 p-4">
         <button>Comment</button>
