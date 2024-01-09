@@ -1,36 +1,41 @@
-import { likedPosts as likedPostsSchema, savedPosts as savedPostsSchema } from '$lib/server/schema'
+import {
+  users as usersSchema,
+  likedPosts as likedPostsSchema,
+  savedPosts as savedPostsSchema,
+  posts as postsSchema,
+  postComments as postCommentsSchema,
+} from '$lib/server/schema'
+import { omit } from '$lib/utils'
 import type { Context } from '../context'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
-import { and, count, eq } from 'drizzle-orm'
+import { and, countDistinct, eq, getTableColumns } from 'drizzle-orm'
 import { z } from 'zod'
 
 export const postRouter = router({
   get: publicProcedure.input(z.object({ postId: z.string() })).query(async ({ ctx, input }) => {
-    const post = await ctx.db.query.posts.findFirst({
-      where: (post, { eq }) => eq(post.id, input.postId),
-      with: {
-        author: {
-          columns: {
-            email: false,
-            emailVerified: false,
-            isAdmin: false,
-          },
-        },
-      },
-    })
+    const [post] = await ctx.db
+      .select({
+        ...getTableColumns(postsSchema),
+        author: omit(getTableColumns(usersSchema), 'email', 'emailVerified', 'isAdmin'),
+        likesCount: countDistinct(likedPostsSchema),
+        commentsCount: countDistinct(postCommentsSchema),
+      })
+      .from(postsSchema)
+      .innerJoin(usersSchema, eq(usersSchema.id, postsSchema.authorId))
+      .leftJoin(likedPostsSchema, eq(likedPostsSchema.postId, postsSchema.id))
+      .leftJoin(postCommentsSchema, eq(postCommentsSchema.postId, postsSchema.id))
+      .where(eq(postsSchema.id, input.postId))
+      .groupBy(postsSchema.id, usersSchema.id)
+
     if (!post) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: `Post with id ${input.postId} was not found`,
       })
     }
-    const [{ count: likesCount }] = await ctx.db
-      .select({ count: count() })
-      .from(likedPostsSchema)
-      .where(eq(likedPostsSchema.postId, input.postId))
 
-    return { ...post, likesCount }
+    return post
   }),
   comments: publicProcedure
     .input(z.object({ postId: z.string() }))

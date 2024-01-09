@@ -12,7 +12,7 @@ export async function load(event) {
       queryKey: ['user', username],
       queryFn: () => trpc(event).user.get.query({ username: username }),
     })
-    .catch(() => error(404, 'User not found'))
+    .catch((e) => error(404, 'User not found'))
   preloadImage(user.image)
 
   if (browser) {

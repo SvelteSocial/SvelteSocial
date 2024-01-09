@@ -1,9 +1,15 @@
-import { followers as followersSchema, posts as postsSchema } from '$lib/server/schema'
+import {
+  users as usersSchema,
+  followers as followersSchema,
+  posts as postsSchema,
+  likedPosts as likedPostsSchema,
+  postComments as postCommentsSchema,
+} from '$lib/server/schema'
 import type { Follower } from '$lib/types'
 import { omit } from '$lib/utils'
 import { protectedProcedure, publicProcedure, router } from '../t'
 import { TRPCError } from '@trpc/server'
-import { count, eq, getTableColumns } from 'drizzle-orm'
+import { count, countDistinct, eq, getTableColumns, or } from 'drizzle-orm'
 import { union } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
@@ -11,63 +17,29 @@ export const userRouter = router({
   get: publicProcedure.input(z.object({ username: z.string() })).query(async ({ ctx, input }) => {
     const session = await ctx.getSession()
     const localUser = session?.user
-    const _user = await ctx.db.query.users.findFirst({
-      where: (user, { eq }) => eq(user.username, input.username),
-      columns: {
-        email: false,
-        emailVerified: false,
-        isAdmin: false,
-      },
-      with:
-        localUser && localUser.username !== input.username
-          ? {
-              followers: {
-                where: (followers, { eq, or }) =>
-                  or(
-                    eq(followers.followerId, localUser.id),
-                    eq(followers.followedId, localUser.id)
-                  ),
-              },
-            }
-          : {},
-    })
-    // we need to do this because conditional `with` is not supported yet
-    const user = _user as typeof _user & { followers?: Follower[] }
-    if (!user) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
-    }
-
-    const isFollowing =
-      !!localUser && user.followers?.map(({ followerId }) => followerId).includes(localUser.id)
-    const isFollowedBy =
-      !!localUser && user.followers?.map(({ followedId }) => followedId).includes(localUser.id)
-    const postsCountQuery = await ctx.db
-      .select({ count: count() })
-      .from(postsSchema)
-      .where(eq(postsSchema.authorId, user.id))
-    const followersCountQuery = ctx.db
-      .select({ count: count() })
-      .from(followersSchema)
-      .where(eq(followersSchema.followedId, user.id))
-    const followingCountQuery = ctx.db
-      .select({ count: count() })
-      .from(followersSchema)
-      .where(eq(followersSchema.followerId, user.id))
-    const [postsCount, followersCount, followingCount] = await Promise.all([
-      postsCountQuery,
-      followersCountQuery,
-      followingCountQuery,
-      // each query return looks like [{ count: 1 }], so we need to map it to [0].count
-    ]).then((counts) => counts.map((count) => count[0].count))
-
-    return {
-      ...omit(user, 'followers'),
-      postsCount,
-      followersCount,
-      followingCount,
-      isFollowing,
-      isFollowedBy,
-    }
+    const [user] = await ctx.db
+      .select({
+        ...omit(getTableColumns(usersSchema), 'email', 'emailVerified', 'isAdmin'),
+        postsCount: countDistinct(postsSchema),
+        followersCount: countDistinct(eq(followersSchema.followedId, usersSchema.id)),
+        followingCount: countDistinct(eq(followersSchema.followerId, usersSchema.id)),
+        ...(localUser && {
+          isFollowing: count(eq(followersSchema.followerId, localUser.id)),
+          isFollowedBy: count(eq(followersSchema.followedId, localUser.id)),
+        }),
+      })
+      .from(usersSchema)
+      .leftJoin(postsSchema, eq(postsSchema.authorId, usersSchema.id))
+      .leftJoin(
+        followersSchema,
+        or(
+          eq(followersSchema.followerId, usersSchema.id),
+          eq(followersSchema.followedId, usersSchema.id)
+        )
+      )
+      .where(eq(usersSchema.username, input.username))
+      .groupBy(usersSchema.id)
+    return { ...user, isFollowing: !!user.isFollowing, isFollowedBy: !!user.isFollowedBy }
   }),
   followers: protectedProcedure.query(async ({ ctx }) => {
     const { user } = ctx.session
@@ -90,14 +62,19 @@ export const userRouter = router({
     return followers
   }),
   posts: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
-    const posts = await union(
-      ctx.db.select().from(postsSchema).where(eq(postsSchema.authorId, input.userId)),
-      ctx.db
-        .select({ ...getTableColumns(postsSchema) })
-        .from(postsSchema)
-        .innerJoin(followersSchema, eq(followersSchema.followedId, postsSchema.authorId))
-        .where(eq(followersSchema.followerId, input.userId))
-    ).orderBy(postsSchema.createdAt)
+    const posts = await ctx.db
+      .select({
+        ...getTableColumns(postsSchema),
+        likesCount: countDistinct(likedPostsSchema),
+        commentsCount: countDistinct(postCommentsSchema),
+      })
+      .from(postsSchema)
+      .leftJoin(likedPostsSchema, eq(likedPostsSchema.postId, postsSchema.id))
+      .leftJoin(postCommentsSchema, eq(postCommentsSchema.postId, postsSchema.id))
+      .where(eq(postsSchema.authorId, input.userId))
+      .groupBy(postsSchema.id)
+      .orderBy(postsSchema.createdAt)
+
     return posts
   }),
   follow: protectedProcedure

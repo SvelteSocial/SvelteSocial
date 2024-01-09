@@ -7,18 +7,11 @@
   import { copy } from 'svelte-copy'
   import { toast } from 'svelte-sonner'
   import PostActions from './PostActions.svelte'
+  import { DateTime } from 'luxon'
 
   export let postId: string
   $: postQuery = createPostQuery<true>({ postId })
   $: commentsQuery = createPostCommentsQuery({ postId })
-
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-  })
 
   $: post = $postQuery.data
   $: ({ author } = post)
@@ -38,7 +31,7 @@
   {#if mounted}
     {@const post = $postQuery.data}
     {@const author = post.author}
-    {@const formatted = formatter.format(post.createdAt)}
+    {@const formatted = DateTime.fromJSDate(post.createdAt).toLocaleString(DateTime.DATETIME_MED)}
     <title>SvelteSocial post by {author.name} | {formatted}</title>
     <meta name="description" content="{post.caption} - {author.username}" />
   {/if}
@@ -94,7 +87,14 @@
     </ul>
     <Separator />
     <div class="p-4">
-      <PostActions postId={post.id} />
+      <PostActions postId={post.id}>
+        <svelte:fragment slot="top" />
+        <p>{post.likesCount} like{post.likesCount ? '' : 's'}</p>
+        <p class="text-sm text-muted-foreground">
+          {DateTime.fromJSDate(post.createdAt).toRelative()}
+        </p>
+        <svelte:fragment slot="bottom" />
+      </PostActions>
     </div>
     <!-- <div class="flex gap-4 p-4">
         <button>Comment</button>

@@ -5,6 +5,7 @@
   import type { MouseEventHandler } from 'svelte/elements'
   import * as Card from '$lib/components/ui/card'
   import { selectedPostId } from '$lib/stores'
+  import { Heart, MessageCircle } from 'lucide-svelte'
 
   export let postId: string | null
   $: postQuery = postId ? createPostQuery({ postId }) : null
@@ -31,7 +32,16 @@
       <div
         class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100"
       >
-        <p>hi</p>
+        <div class="flex gap-6 font-bold">
+          <div class="flex">
+            <Heart fill="white" class="mr-1" />
+            {post.likesCount}
+          </div>
+          <div class="flex">
+            <MessageCircle fill="white" class="mr-1" />
+            {post.commentsCount}
+          </div>
+        </div>
       </div>
     </a>
   </Card.Root>

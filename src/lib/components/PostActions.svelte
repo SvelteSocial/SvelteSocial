@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores'
-  import { Bookmark, Heart, Loader2, MessageCircle, Send } from 'lucide-svelte'
+  import { Bookmark, Heart, Loader2, MessageCircle, SendHorizonal } from 'lucide-svelte'
   import { Button } from '$lib/components/ui/button'
   import { createMutation } from '@tanstack/svelte-query'
   import { trpc } from '$lib/trpc/client'
@@ -37,7 +37,7 @@
   }
 </script>
 
-<div>
+<slot name="top">
   <div class="flex justify-between">
     <div class="flex gap-2">
       <Button
@@ -54,7 +54,7 @@
         {/if}
       </Button>
       <Button variant="ghost" size="icon"><MessageCircle /></Button>
-      <Button variant="ghost" size="icon"><Send /></Button>
+      <Button variant="ghost" size="icon"><SendHorizonal /></Button>
     </div>
     <Button
       variant="ghost"
@@ -69,4 +69,8 @@
       {/if}
     </Button>
   </div>
-</div>
+</slot>
+<slot />
+<slot name="bottom">
+  <p>Create a comment</p>
+</slot>
